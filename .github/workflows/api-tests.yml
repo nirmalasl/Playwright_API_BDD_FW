@@ -42,12 +42,23 @@ jobs:
         # playwright.config.ts — GitHub Actions sets CI=true automatically,
         # which is what makes the config append the `github` annotations
         # reporter. --skip-open avoids trying to launch a browser in CI.
+        #
+        # The || fallbacks below matter: if a repo variable/secret isn't set,
+        # GitHub Actions still injects the env var as an EMPTY STRING (not
+        # unset), which silently defeats playwright.config.ts's own
+        # `process.env.BASE_URL ?? default` fallback (?? only catches
+        # null/undefined, not ""). Resolving the default here in the
+        # workflow means the suite runs correctly even with zero configured
+        # secrets — TEST_USERNAME/TEST_PASSWORD below are the public seeded
+        # demo user for the Platzi Fake Store sandbox API, not real
+        # credentials, so a hardcoded fallback is safe. Override any of them
+        # by setting the corresponding repo secret/variable.
         run: npm run test:ci
         continue-on-error: true
         env:
-          BASE_URL: ${{ vars.BASE_URL }}
-          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
-          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+          BASE_URL: ${{ vars.BASE_URL || 'https://api.escuelajs.co/api/v1/' }}
+          TEST_USERNAME: ${{ secrets.TEST_USERNAME || 'john@mail.com' }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD || 'changeme' }}
 
       - name: Upload Playwright HTML report
         if: always()
