@@ -9,7 +9,7 @@
     "test:smoke": "node scripts/run-tests-with-report.js --grep @smoke",
     "pretest:regression": "bddgen",
     "test:regression": "node scripts/run-tests-with-report.js --grep @regression",
-    "test:ci": "bddgen && node scripts/run-tests-with-report.js --reporter=github --skip-open",
+    "test:ci": "bddgen && node scripts/run-tests-with-report.js --skip-open",
     "bddgen": "bddgen",
     "typecheck": "tsc --noEmit",
     "report": "playwright show-report",
