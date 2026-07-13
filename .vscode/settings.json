@@ -1,0 +1,10 @@
+{
+  // Official Cucumber VS Code extension (cucumber.io)
+  "cucumber.features": ["features/**/*.feature"],
+  "cucumber.glue": ["steps/**/*.ts", "support/fixtures.ts"],
+
+  // cucumberautocomplete extension fallback
+  "cucumberautocomplete.steps": ["steps/**/*.ts", "support/fixtures.ts"],
+  "cucumberautocomplete.syncfeatures": "features/**/*.feature",
+  "cucumberautocomplete.strictGherkinCompletion": false
+}
