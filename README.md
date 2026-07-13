@@ -1,4 +1,5 @@
-# client_demo_fw5-Playwright
+# Playwright_API_BDD_FW
+
 
 A BDD API test automation framework built with [Playwright](https://playwright.dev/) and [playwright-bdd](https://github.com/vitalets/playwright-bdd), targeting the [Platzi Fake Store API](https://api.escuelajs.co/api/v1/).
 
