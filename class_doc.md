@@ -65,21 +65,38 @@ playwright.config.ts
 
 ---
 
+## `authTestData` — src/data/authTestData.ts
+
+**Purpose:** Single source of truth for all credential/token values used across auth scenarios. Steps look up data by semantic key instead of receiving literal values from the `.feature` file — keeps Gherkin readable as behaviour, not data, and de-duplicates the "valid credentials" fallback that used to be repeated in multiple step definitions.
+
+| Key | Shape | Used by |
+|---|---|---|
+| `validUser` | `{ email, password }` — sourced from `TEST_USERNAME`/`TEST_PASSWORD` env vars, falls back to the public sandbox demo user | Login + "logged in" precondition steps |
+| `invalidPassword` | `{ email, password }` | "Login fails with invalid password" |
+| `nonExistentUser` | `{ email, password }` | "Login fails with non-existent email" |
+| `emptyEmail` | `{ email: '', password }` | "Login fails when email is empty" |
+| `invalidAccessToken` | `string` | "Fetch profile with an invalid access token" |
+| `invalidRefreshToken` | `string` | "Refresh token fails with an invalid refresh token" |
+
+---
+
 ## BDD Step Definitions — authSteps.ts
 
-Not a class, but a module of `Given / When / Then` hooks wired to the fixture system via `createBdd(test)`.
+Not a class, but a module of `Given / When / Then` hooks wired to the fixture system via `createBdd(test)`. All data-bearing steps resolve their values from `authTestData` rather than from Gherkin string parameters (see above).
 
 | Hook | Purpose |
 |---|---|
 | `Given('the authentication API is available')` | Connectivity smoke-check against the API host |
-| `Given('I am logged in with valid credentials')` | Pre-condition — performs a real login and stores tokens into `authState` |
-| `When('I send a POST request to … with valid credentials')` | Calls `authClient.login()` with env-var credentials |
-| `When('I send a POST request to … with email … and password …')` | Calls `authClient.login()` with inline Gherkin values |
-| `When('I send a GET request to …')` | Calls `authClient.getProfile()` using stored `accessToken` |
-| `When('I send a GET request to … without a token')` | Calls `authClient.getProfile('')` — tests unauthenticated access |
-| `When('I send a GET request to … with token …')` | Calls `authClient.getProfile()` with an arbitrary inline token |
-| `When('I send a POST request to … with the stored refresh token')` | Calls `authClient.refreshToken()` using stored `refreshToken` |
-| `When('I send a POST request to … with refreshToken …')` | Calls `authClient.refreshToken()` with an inline value |
-| `When('I send a POST request to … with an empty refresh token')` | Calls `authClient.refreshToken({ refreshToken: '' })` |
+| `Given('I am logged in with valid credentials')` | Pre-condition — performs a real login with `authTestData.validUser` and stores tokens into `authState` |
+| `When('I log in with valid credentials')` | Calls `authClient.login()` with `authTestData.validUser` |
+| `When('I log in with an invalid password')` | Calls `authClient.login()` with `authTestData.invalidPassword` |
+| `When('I log in with a non-existent email')` | Calls `authClient.login()` with `authTestData.nonExistentUser` |
+| `When('I log in with an empty email')` | Calls `authClient.login()` with `authTestData.emptyEmail` |
+| `When('I request my profile')` | Calls `authClient.getProfile()` using stored `accessToken` |
+| `When('I request my profile without a token')` | Calls `authClient.getProfile('')` — tests unauthenticated access |
+| `When('I request my profile with an invalid access token')` | Calls `authClient.getProfile()` with `authTestData.invalidAccessToken` |
+| `When('I refresh my access token')` | Calls `authClient.refreshToken()` using stored `refreshToken` |
+| `When('I refresh my access token using an invalid refresh token')` | Calls `authClient.refreshToken()` with `authTestData.invalidRefreshToken` |
+| `When('I refresh my access token using an empty refresh token')` | Calls `authClient.refreshToken({ refreshToken: '' })` |
 | `Then('the response status should be {int}')` | Asserts `authState.lastStatus` equals expected code |
 | `Then('the response body should contain an/a {string}')` | Asserts the named key exists in `authState.lastBody` |

@@ -25,8 +25,10 @@ A BDD API test automation framework built with [Playwright](https://playwright.d
 │   └── auth/
 │       └── auth.feature        # Gherkin scenarios for the Authentication API
 ├── src/
-│   └── api/
-│       └── authClient.ts       # API client wrapper (login, profile, refresh-token)
+│   ├── api/
+│   │   └── authClient.ts       # API client wrapper (login, profile, refresh-token)
+│   └── data/
+│       └── authTestData.ts     # Centralized test data (credentials, tokens) — not hardcoded in .feature files
 ├── steps/
 │   └── auth/
 │       └── authSteps.ts        # Step definitions

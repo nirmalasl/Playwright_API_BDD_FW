@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 import { test } from '../../support/fixtures';
+import { authTestData } from '../../src/data/authTestData';
 
 const { Given, When, Then } = createBdd(test);
 
@@ -19,10 +20,7 @@ Given('the authentication API is available', async ({ request }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 Given('I am logged in with valid credentials', async ({ authClient, authState }) => {
-  const res = await authClient.login({
-    email: process.env.TEST_USERNAME ?? 'john@mail.com',
-    password: process.env.TEST_PASSWORD ?? 'changeme',
-  });
+  const res = await authClient.login(authTestData.validUser);
   expect(res.status()).toBe(201);
   const body = (await res.json()) as { access_token: string; refresh_token: string };
   authState.accessToken = body.access_token;
@@ -33,71 +31,71 @@ Given('I am logged in with valid credentials', async ({ authClient, authState })
 // POST /auth/login — When steps
 // ─────────────────────────────────────────────────────────────────────────────
 
-When('I send a POST request to {string} with valid credentials', async ({ authClient, authState }, _path: string) => {
-  const res = await authClient.login({
-    email: process.env.TEST_USERNAME ?? 'john@mail.com',
-    password: process.env.TEST_PASSWORD ?? 'changeme',
-  });
+When('I log in with valid credentials', async ({ authClient, authState }) => {
+  const res = await authClient.login(authTestData.validUser);
   authState.lastStatus = res.status();
   try { authState.lastBody = (await res.json()) as Record<string, unknown>; } catch { /* non-JSON */ }
   authState.accessToken = String(authState.lastBody.access_token ?? '');
   authState.refreshToken = String(authState.lastBody.refresh_token ?? '');
 });
 
-When(
-  'I send a POST request to {string} with email {string} and password {string}',
-  async ({ authClient, authState }, _path: string, email: string, password: string) => {
-    const res = await authClient.login({ email, password });
-    authState.lastStatus = res.status();
-    try { authState.lastBody = (await res.json()) as Record<string, unknown>; } catch { /* non-JSON */ }
-  },
-);
+When('I log in with an invalid password', async ({ authClient, authState }) => {
+  const res = await authClient.login(authTestData.invalidPassword);
+  authState.lastStatus = res.status();
+  try { authState.lastBody = (await res.json()) as Record<string, unknown>; } catch { /* non-JSON */ }
+});
+
+When('I log in with a non-existent email', async ({ authClient, authState }) => {
+  const res = await authClient.login(authTestData.nonExistentUser);
+  authState.lastStatus = res.status();
+  try { authState.lastBody = (await res.json()) as Record<string, unknown>; } catch { /* non-JSON */ }
+});
+
+When('I log in with an empty email', async ({ authClient, authState }) => {
+  const res = await authClient.login(authTestData.emptyEmail);
+  authState.lastStatus = res.status();
+  try { authState.lastBody = (await res.json()) as Record<string, unknown>; } catch { /* non-JSON */ }
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /auth/profile — When steps
 // ─────────────────────────────────────────────────────────────────────────────
 
-When('I send a GET request to {string}', async ({ authClient, authState }, _path: string) => {
+When('I request my profile', async ({ authClient, authState }) => {
   const res = await authClient.getProfile(authState.accessToken);
   authState.lastStatus = res.status();
   try { authState.lastBody = (await res.json()) as Record<string, unknown>; } catch { /* non-JSON */ }
 });
 
-When('I send a GET request to {string} without a token', async ({ authClient, authState }, _path: string) => {
+When('I request my profile without a token', async ({ authClient, authState }) => {
   const res = await authClient.getProfile('');
   authState.lastStatus = res.status();
   try { authState.lastBody = (await res.json()) as Record<string, unknown>; } catch { /* non-JSON */ }
 });
 
-When(
-  'I send a GET request to {string} with token {string}',
-  async ({ authClient, authState }, _path: string, token: string) => {
-    const res = await authClient.getProfile(token);
-    authState.lastStatus = res.status();
-    try { authState.lastBody = (await res.json()) as Record<string, unknown>; } catch { /* non-JSON */ }
-  },
-);
+When('I request my profile with an invalid access token', async ({ authClient, authState }) => {
+  const res = await authClient.getProfile(authTestData.invalidAccessToken);
+  authState.lastStatus = res.status();
+  try { authState.lastBody = (await res.json()) as Record<string, unknown>; } catch { /* non-JSON */ }
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /auth/refresh-token — When steps
 // ─────────────────────────────────────────────────────────────────────────────
 
-When('I send a POST request to {string} with the stored refresh token', async ({ authClient, authState }, _path: string) => {
+When('I refresh my access token', async ({ authClient, authState }) => {
   const res = await authClient.refreshToken({ refreshToken: authState.refreshToken });
   authState.lastStatus = res.status();
   try { authState.lastBody = (await res.json()) as Record<string, unknown>; } catch { /* non-JSON */ }
 });
 
-When(
-  'I send a POST request to {string} with refreshToken {string}',
-  async ({ authClient, authState }, _path: string, refreshToken: string) => {
-    const res = await authClient.refreshToken({ refreshToken });
-    authState.lastStatus = res.status();
-    try { authState.lastBody = (await res.json()) as Record<string, unknown>; } catch { /* non-JSON */ }
-  },
-);
+When('I refresh my access token using an invalid refresh token', async ({ authClient, authState }) => {
+  const res = await authClient.refreshToken({ refreshToken: authTestData.invalidRefreshToken });
+  authState.lastStatus = res.status();
+  try { authState.lastBody = (await res.json()) as Record<string, unknown>; } catch { /* non-JSON */ }
+});
 
-When('I send a POST request to {string} with an empty refresh token', async ({ authClient, authState }, _path: string) => {
+When('I refresh my access token using an empty refresh token', async ({ authClient, authState }) => {
   const res = await authClient.refreshToken({ refreshToken: '' });
   authState.lastStatus = res.status();
   try { authState.lastBody = (await res.json()) as Record<string, unknown>; } catch { /* non-JSON */ }
