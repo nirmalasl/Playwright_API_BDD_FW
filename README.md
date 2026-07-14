@@ -162,7 +162,7 @@ The report is saved to `playwright-report/index.html`.
 Feature file (.feature)
         │
         ▼
-  Step definitions (steps/)
+  Step definitions (steps/)  ◀── Test data (src/data/authTestData.ts)
         │  uses
         ▼
   Fixtures (support/fixtures.ts)   ← AuthState (shared mutable state per test)
@@ -178,6 +178,7 @@ Feature file (.feature)
 ```
 
 - **`AuthClient`** — encapsulates all raw HTTP calls. Each method maps to one API endpoint.
+- **`authTestData`** (`src/data/authTestData.ts`) — centralized credentials/tokens keyed by scenario intent (`validUser`, `invalidPassword`, etc.), so step definitions never receive literal secrets/values via Gherkin parameters and `.feature` files stay focused on describing behavior.
 - **`AuthState`** — a per-test mutable state bag (`lastStatus`, `lastBody`, `accessToken`, `refreshToken`) that allows `When` steps to write results and `Then` steps to assert them without coupling.
 - **`Fixtures`** — Playwright-BDD fixtures that wire `AuthClient` and `AuthState` into every step definition via dependency injection.
 - **Allure reporting pipeline** — `allure-playwright` streams results into `allure-results/` during the run; the `test` / `test:smoke` / `test:regression` npm scripts then chain `allure generate` and `allure open` so the HTML report is built and launched automatically at the end of every run, pass or fail.

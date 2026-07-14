@@ -7,6 +7,7 @@ graph TD
     CFG["playwright.config.ts"]
     FEAT["features/\n*.feature files"]
     STEPS["steps/\nStep Definitions"]
+    DATA["src/data/authTestData.ts\nCentralized test data"]
     FIXTURES["support/fixtures.ts\nfixtures & state"]
     CLIENT["src/api/AuthClient\nAPI wrapper"]
     RUNNER["Playwright Test Runner"]
@@ -22,6 +23,7 @@ graph TD
     CFG -->|bddgen| RUNNER
     FEAT -->|bddgen| RUNNER
     STEPS --> RUNNER
+    DATA --> STEPS
     RUNNER --> FIXTURES
     FIXTURES --> CLIENT
     CLIENT -->|HTTP| API
@@ -39,6 +41,7 @@ graph TD
 | Config | `playwright.config.ts` | Base URL, retries, reporters (incl. `allure-playwright`), BDD globs |
 | BDD Scenarios | `features/` | Gherkin feature files (`@smoke`, `@regression`) |
 | Step Definitions | `steps/` | Given / When / Then bindings |
+| Test Data | `src/data/authTestData.ts` | Centralized credentials/tokens by semantic key — keeps `.feature` files free of hardcoded literal values |
 | Fixtures | `support/fixtures.ts` | `authClient` + per-test `authState` |
 | API Client | `src/api/` | Typed wrappers for each endpoint |
 | Report (Playwright) | `playwright-report/` | HTML output after each run (not auto-opened) |
